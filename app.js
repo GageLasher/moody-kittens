@@ -7,6 +7,28 @@ let kittens = []
  * Then reset the form
  */
 function addKitten(event) {
+  event.preventDefault()
+  let form = event.target
+  let id = Math.floor(Math.random() * 100)
+  let nameExists = kittens.find(k => k.name == form.name.value)
+  if (!nameExists) {
+
+    let kitten = {
+      name: form.name.value,
+      id: id,
+      affection: 5,
+      mood: "tolerant"
+    }
+    kittens.push(kitten)
+    form.reset()
+    // console.log(kittens);
+    saveKittens()
+    drawKittens()
+  } else {
+    alert("Choose a unique name")
+  }
+
+
 }
 
 /**
@@ -14,6 +36,10 @@ function addKitten(event) {
  * Saves the string to localstorage at the key kittens 
  */
 function saveKittens() {
+  const jsonArr = JSON.stringify(kittens);
+
+  // save to localStorage
+  localStorage.setItem("kittens", jsonArr);
 }
 
 /**
@@ -22,12 +48,37 @@ function saveKittens() {
  * the kittens array to the retrieved array
  */
 function loadKittens() {
+  const str = localStorage.getItem("kittens");
+
+  // convert string to valid object
+  // console.log(str);
+  const parsedArr = JSON.parse(str);
+  if (parsedArr != null) {
+    kittens = parsedArr
+
+  }
+
 }
 
 /**
  * Draw all of the kittens to the kittens element
  */
 function drawKittens() {
+  let template = ''
+  kittens.forEach(k => template += `
+  <div class="card" id="${k.id}">
+    <img src="http://thiscatdoesnotexist.com/" class="kitten ${k.mood}">
+    <div class="d-flex">
+    ${k.name}
+    ${k.affection}
+    </div>
+    <div>
+    <button onClick="pet(${k.id})"> Pet </button>
+    <button onClick="catnip(${k.id})"> Catnip </button>
+    </div>
+  </div>
+  `)
+  document.getElementById("kittens").innerHTML = template
 }
 
 
@@ -37,6 +88,7 @@ function drawKittens() {
  * @return {Kitten}
  */
 function findKittenById(id) {
+  return kittens.find(k => k.id == id)
 }
 
 
@@ -49,6 +101,22 @@ function findKittenById(id) {
  * @param {string} id 
  */
 function pet(id) {
+  let kitten = findKittenById(id)
+  let number = Math.random()
+  console.log(number);
+  if (number > 0.5) {
+    kitten.affection += 1
+  } else {
+    kitten.affection -= 1
+  }
+  console.log(kitten)
+  console.log(kitten.affection);
+  // document.getElementById(`${id}`)
+  // saveKittens()
+  setKittenMood(kitten)
+  // drawKittens()
+
+
 }
 
 /**
@@ -58,6 +126,12 @@ function pet(id) {
  * @param {string} id
  */
 function catnip(id) {
+  let kitten = findKittenById(id)
+  kitten.mood = "tolerant"
+  kitten.affection = 5
+  // saveKittens()
+  setKittenMood(kitten)
+  // drawKittens()
 }
 
 /**
@@ -65,13 +139,25 @@ function catnip(id) {
  * @param {Kitten} kitten 
  */
 function setKittenMood(kitten) {
+  if (kitten.affection > 5) {
+    kitten.mood = "happy"
+  } else if (kitten.affection < 3) {
+    kitten.mood = "sad"
+  } else {
+    kitten.mood = "tolerant"
+  }
+  saveKittens()
+  drawKittens()
 }
 
 /**
  * Removes all of the kittens from the array
  * remember to save this change
  */
-function clearKittens(){
+function clearKittens() {
+  kittens = []
+  saveKittens()
+  drawKittens()
 }
 
 /**
@@ -81,6 +167,7 @@ function clearKittens(){
 function getStarted() {
   document.getElementById("welcome").remove();
   console.log('Good Luck, Take it away')
+  drawKittens()
 }
 
 
@@ -102,3 +189,4 @@ function generateId() {
 }
 
 loadKittens();
+console.log(kittens)
